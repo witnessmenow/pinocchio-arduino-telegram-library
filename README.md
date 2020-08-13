@@ -13,3 +13,4 @@ I have created a lot of different Arduino libraries that I hope people can make 
 
 - Send message
 - getUpdates (supports basic messages)
+- Send ReplyKeyboard
