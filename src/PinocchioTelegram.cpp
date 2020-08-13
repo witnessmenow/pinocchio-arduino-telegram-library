@@ -112,8 +112,6 @@ int PinocchioTelegram::makeGetRequest(const char *command)
 
 bool PinocchioTelegram::sendMessage(const char *chat_id, const char *text, const char *parse_mode)
 {
-    char command[100];
-    sprintf(command, commandFormat, _botToken, "sendMessage");
     char body[1000];
 
     if (parse_mode == NULL)
@@ -125,6 +123,14 @@ bool PinocchioTelegram::sendMessage(const char *chat_id, const char *text, const
         sprintf(body, sendMessageBodyWithParse, chat_id, text, parse_mode);
     }
 
+    return sendMessage(body);
+}
+
+bool PinocchioTelegram::sendMessage(const char *body)
+{
+    char command[100];
+    sprintf(command, commandFormat, _botToken, "sendMessage");
+
     PINOCCHIO_DEBUG_SERIAL_LN(command);
     PINOCCHIO_DEBUG_SERIAL_LN(body);
 
@@ -133,7 +139,7 @@ bool PinocchioTelegram::sendMessage(const char *chat_id, const char *text, const
     return statusCode == 200;
 }
 
-int PinocchioTelegram::getUpdate(long offset)
+int PinocchioTelegram::getUpdates(long offset)
 {
     char command[100];
     if (offset == -1)

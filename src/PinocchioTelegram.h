@@ -19,7 +19,7 @@ MIT License
 #define PINOCCHIO_ENABLE_SEIRAL
 
 //unmark following line to enable debug mode
-//#define PINOCCHIO_ENABLE_DEBUG
+#define PINOCCHIO_ENABLE_DEBUG
 
 #ifdef PINOCCHIO_ENABLE_SEIRAL
 #define PINOCCHIO_SERIAL(STR) Serial.print(STR)
@@ -86,7 +86,8 @@ public:
     int makePutRequest(const char *command, const char *body = "");
 
     bool sendMessage(const char *chat_id, const char *text, const char *parse_mode = NULL);
-    int getUpdate(long offset = -1);
+    bool sendMessage(const char *body);
+    int getUpdates(long offset = -1);
 
     bool processResult(JsonObject result);
 
@@ -97,7 +98,6 @@ public:
     int responseBufferSize = 10000;
     int portNumber = 443;
     long last_message_received = -1;
-    bool getUpdates(long offset = -1);
     Client *client;
 
 private:

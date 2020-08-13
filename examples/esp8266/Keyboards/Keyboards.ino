@@ -1,5 +1,11 @@
 /*******************************************************************
-    Echos any Telegram message back on an ESP8266
+    Examples of sending reply Keyboards using an ESP8266
+
+    Keyboard Types:
+    
+    ReplyKeyboardMarkup: simple to handle the response.
+    https://core.telegram.org/bots/api#replykeyboardmarkup
+
 
     Parts:
     D1 Mini ESP8266 * - http://s.click.aliexpress.com/e/uzFUnIe
@@ -49,6 +55,11 @@
 char ssid[] = "SSID";         // your network SSID (name)
 char password[] = "password"; // your network password
 
+// Use @myidbot to find out the chat ID of an individual or a group
+// Also note that you need to click "start" on a bot before it can
+// message you
+#define CHAT_ID "175753388"
+
 #define TELEGRAM_BOT_TOKEN "XXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" // your Bot Token (Get from Botfather)
 //------- ---------------------- ------
 
@@ -59,9 +70,42 @@ PinocchioTelegram bot(client, TELEGRAM_BOT_TOKEN);
 int botRequestDelay = 1000;
 unsigned long lastTimeBotRan;
 
+int ledStatus = HIGH;
+
+void sendReplyKeyboard(const char *chatId, const char *message)
+{
+    const char *sendMessageBody =
+        R"({"chat_id": "%s","text": "%s", "reply_markup": %s})";
+
+    // See full list of options here: https://core.telegram.org/bots/api#replykeyboardmarkup
+    // Pay attention to the qoutation marks or lack of around the placeholders
+    // Arrays will not have them, either will booleans
+    const char *replyMarkup =
+        R"({"keyboard": %s,"resize_keyboard": %s})";
+
+    char keyboardBuffer[100];
+
+    // keyboard is an array of arrays.
+    // The outer array represents the rows
+    // The inner arrays represents the coloums in the given row.
+    // The below example has two buttons on the first row, and one button on the second.
+    sprintf(keyboardBuffer, replyMarkup, "[[\"/ledOn\", \"/ledOff\"],[\"/status\"]]", "true");
+
+    char body[150 + strlen(message)];
+    sprintf(body, sendMessageBody, chatId, message, keyboardBuffer);
+    if (bot.sendMessage(body))
+    {
+        Serial.println("Sent!");
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
+
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH); //Avtive LOW
+    ledStatus = HIGH;
 
     // This is the simplest way of getting this working
     // if you are passing sensitive information, or controlling
@@ -90,36 +134,42 @@ void setup()
     Serial.println("WiFi connected");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+
+    sendReplyKeyboard(CHAT_ID, "This is a replyKeyboard.");
 }
 
-void printTelegramMessage(TelegramMessage message)
+void handleMessage(TelegramMessage message)
 {
-    char bufferArray[64];
+    char chatId[64];
+    sprintf(chatId, "%llu", bot.telegramMessage.chat_id);
 
-    Serial.println("--------- Telegram Message ---------");
-
-    Serial.print("Text: ");
-    Serial.println(message.text);
-    Serial.print("Chat ID: ");
-    sprintf(bufferArray, "%llu", message.chat_id);
-    Serial.println(bufferArray);
-    Serial.print("Chat Title: ");
-    Serial.println(message.chat_title);
-
-    Serial.print("From ID: ");
-    // Print can't handle long long variables
-    sprintf(bufferArray, "%llu", message.from_id);
-    Serial.print("From Name: ");
-    Serial.println(message.from_name);
-
-    Serial.print("Date: ");
-    Serial.println(message.date);
-
-    Serial.print("Type (enum value): ");
-    Serial.println(message.type);
-
-    Serial.println();
-    Serial.println("------------------------");
+    if (strcmp(message.text, "/ledOn") == 0)
+    {
+        digitalWrite(LED_BUILTIN, LOW); //Avtive LOW
+        ledStatus = LOW;
+        sendReplyKeyboard(chatId, "Set LED on");
+    }
+    else if (strcmp(message.text, "/ledOff") == 0)
+    {
+        digitalWrite(LED_BUILTIN, HIGH); //Avtive LOW
+        ledStatus = HIGH;
+        sendReplyKeyboard(chatId, "Set LED off");
+    }
+    else if (strcmp(message.text, "/status") == 0)
+    {
+        if (ledStatus == LOW)
+        {
+            sendReplyKeyboard(chatId, "LED is on!");
+        }
+        else
+        {
+            sendReplyKeyboard(chatId, "LED is off!");
+        }
+    }
+    else
+    {
+        sendReplyKeyboard(chatId, "This is a replyKeyboard.");
+    }
 }
 
 void loop()
@@ -132,13 +182,7 @@ void loop()
 
         if (messageStatus > 0)
         {
-            printTelegramMessage(bot.telegramMessage);
-            char chatId[64];
-            sprintf(chatId, "%llu", bot.telegramMessage.chat_id);
-            if (bot.sendMessage(chatId, bot.telegramMessage.text))
-            {
-                Serial.println("Messsage sent!");
-            }
+            handleMessage(bot.telegramMessage);
         }
 
         lastTimeBotRan = millis();
