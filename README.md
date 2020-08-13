@@ -1,2 +1,2 @@
 # pinocchio-arduino-telegram-library
-A Telegram library for Arduino that got not Strings to hold it down
+A Telegram library for Arduino that got no Strings to hold it down
