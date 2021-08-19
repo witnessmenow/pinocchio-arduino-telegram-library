@@ -1,4 +1,7 @@
 # pinocchio-arduino-telegram-library
+
+## Don't use at the moment, I'm doing some dumb things with pointers and things out of scope...
+
 A Telegram library for Arduino that got no Strings to hold it down
 
 This is basically a proof of concept to see how much of a difference it makes to not use Strings in a library. For a more full features Telegram library, check out the [Universal Telegram Library](https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot)
