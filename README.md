@@ -1,6 +1,6 @@
 # pinocchio-arduino-telegram-library
 
-## Don't use at the moment, I'm doing some dumb things with pointers and things out of scope...
+### Don't use at the moment, I'm doing some dumb things with pointers and things out of scope...
 
 A Telegram library for Arduino that got no Strings to hold it down
 
